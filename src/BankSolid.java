@@ -1,43 +1,35 @@
 /**
- * Class BankSolid (Pengganti BankPolimorfik):
- * Berperan sebagai entry point (titik masuk) dan komposer/perakit objek.
- *
- * Penerapan SRP di main():
- * Tidak ada lagi logika bisnis (perhitungan bunga/admin) maupun looping pencetakan laporan di sini.
- * main() hanya bertugas:
- * 1. Menginstansiasi objek data rekening.
- * 2. Mengelompokkannya ke dalam array poliformik (Rekening[] dan BerBunga[]).
- * 3. Memanggil service ProsesAkhirBulan dan LaporanBank sesuai urutan yang ditentukan.
+ * Class BankSolid (Update Commit 2 - Penerapan OCP):
+ * Satu-satunya perubahan di file ini hanyalah menambahkan objek Deposito milik Dewi
+ * dan memasukkannya ke array semua[] dan berbunga[].
+ * Alur pemanggilan LaporanBank dan ProsesAkhirBulan tidak berubah sama sekali.
  */
 public class BankSolid {
     public static void main(String[] args) {
-        // 1. Pembuatan objek data rekening awal
+        // 1. Pembuatan objek data rekening (ditambah Deposito Dewi)
         Tabungan ani = new Tabungan("101", "Ani", 1_000_000, 2.5);
         Tabungan citra = new Tabungan("102", "Citra", 300_000, 2.0);
         Giro budi = new Giro("201", "Budi", 200_000, 500_000);
+        Deposito dewi = new Deposito("301", "Dewi", 5_000_000, 4.0);
 
         // 2. Pengelompokan polimorfik:
-        // Semua jenis rekening masuk ke array Rekening[]
-        Rekening[] semua = { ani, citra, budi };
-        // Hanya rekening yang mengimplementasikan BerBunga yang masuk ke BerBunga[]
-        BerBunga[] berbunga = { ani, citra };
+        // Dewi otomatis bisa masuk ke Rekening[] karena Deposito extends Rekening
+        Rekening[] semua = { ani, citra, budi, dewi };
+        // Dewi juga bisa masuk ke BerBunga[] karena Deposito implements BerBunga
+        BerBunga[] berbunga = { ani, citra, dewi };
 
-        // Inisialisasi objek pengelola laporan dan proses akhir bulan
         LaporanBank laporan = new LaporanBank();
         ProsesAkhirBulan proses = new ProsesAkhirBulan();
 
-        // 3. Eksekusi alur program:
-        // Cetak kondisi saldo awal sebelum diproses
+        // 3. Eksekusi alur program (tidak ada perubahan kode di sini - bukti OCP)
         laporan.cetakDaftar("========== REKENING AWAL ==========", semua);
 
-        // Jalankan proses akhir bulan dengan urutan wajib: Admin -> Bunga -> Autodebet
         System.out.println("========== AKHIR BULAN ============");
         proses.potongBiayaAdmin(semua);
         proses.tambahBunga(berbunga);
-        proses.autodebet(semua, 50_000);
+        proses.autodebet(semua, 50_000); // Program akan crash di baris ini saat memproses Dewi!
         System.out.println();
 
-        // Cetak kondisi saldo akhir dan total dana bank setelah semua proses selesai
         laporan.cetakDaftar("========== REKENING AKHIR =========", semua);
         laporan.cetakTotal(semua);
     }
