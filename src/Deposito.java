@@ -1,14 +1,10 @@
 import java.util.Locale;
 
 /**
- * Subclass Deposito (Penerapan Open/Closed Principle - OCP):
- * Menambahkan jenis rekening baru dengan cara memperluas sistem (extends Rekening, implements BerBunga),
- * TANPA mengubah satu baris pun kode di ProsesAkhirBulan maupun LaporanBank.
- *
- * Karakteristik bisnis Deposito:
- * - Tanpa biaya admin (return 0)
- * - Berbunga (implements BerBunga)
- * - Tidak bisa ditarik sebelum jatuh tempo
+ * Subclass Deposito (Penerapan OCP & LSP):
+ * - OCP: Menambah jenis rekening baru tanpa mengubah ProsesAkhirBulan maupun LaporanBank.
+ * - LSP: Mematuhi kontrak Rekening.tarik() dengan mengembalikan false (bukan melempar exception)
+ *        saat penarikan ditolak sebelum jatuh tempo, sehingga bisa diproses aman oleh autodebet().
  */
 public class Deposito extends Rekening implements BerBunga {
     private double bungaPersen;
@@ -18,20 +14,17 @@ public class Deposito extends Rekening implements BerBunga {
         this.bungaPersen = bungaPersen;
     }
 
-    /**
-     * SIMULASI PELANGGARAN LSP :
-     * Di sini kita sengaja melempar UnsupportedOperationException untuk membuktikan bahwa
-     * mengubah perilaku method yang tidak sesuai kontrak superclass (Rekening.tarik)
-     * akan menyebabkan program crash saat Deposito diproses secara polimorfik di ProsesAkhirBulan.autodebet().
-     */
+    // Exception in thread "main" java.lang.UnsupportedOperationException: Deposito tidak bisa ditarik
     @Override
     public boolean tarik(int jumlah) {
-        throw new UnsupportedOperationException("Deposito tidak bisa ditarik");
+        // Mematuhi kontrak superclass Rekening:
+        // Karena deposito tidak bisa ditarik sebelum jatuh tempo, kembalikan false tanpa melempar exception.
+        return false;
     }
 
     @Override
     public int biayaAdminBulanan() {
-        // Deposito bebas biaya admin bulanan
+        // Deposito tanpa biaya admin bulanan
         return 0;
     }
 
